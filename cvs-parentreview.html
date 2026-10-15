@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVS Administration Dashboard | Class 7A</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #F7F3EB;
+      --surface-card: #FFFCF6;
+      --surface-subtle: #EEE6D9;
+      --text-main: #29251F;
+      --text-muted: #746B5F;
+      --gold-primary: #A58652;
+      --gold-hover: #8D7040;
+      --border-fine: #DCD1C0;
+      --state-success: #2E5A44;
+      --state-error: #9E3A3A;
+      --shadow-subtle: 0 2px 12px rgba(41, 37, 31, 0.04);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrapper {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem 1.5rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-fine);
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 0.8rem;
+      color: var(--gold-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .status-badge {
+      font-size: 0.8rem;
+      color: var(--state-success);
+      background: #EBF3EE;
+      border: 1px solid #CADBCF;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      padding: 0.55rem 1rem;
+      border-radius: 3px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      border: 1px solid var(--border-fine);
+      background: transparent;
+      color: var(--text-main);
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover {
+      background: var(--surface-subtle);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-fine);
+      border-radius: 4px;
+      padding: 1.25rem 1.4rem;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .stat-label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 500;
+    }
+
+    .stat-val {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1;
+    }
+
+    .stat-val-sub {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--gold-primary);
+      margin-left: 0.2rem;
+    }
+
+    .dashboard-middle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-middle {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--surface-card);
+      border: 1px solid var(--border-fine);
+      border-radius: 4px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .panel-header {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      border-bottom: 1px solid var(--border-fine);
+      padding-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dist-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.65rem;
+      font-size: 0.85rem;
+    }
+
+    .dist-label {
+      width: 55px;
+      color: var(--text-muted);
+    }
+
+    .dist-track {
+      flex: 1;
+      height: 8px;
+      background: var(--surface-subtle);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .dist-fill {
+      height: 100%;
+      background: var(--gold-primary);
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .dist-count {
+      width: 35px;
+      text-align: right;
+      font-weight: 600;
+      font-size: 0.82rem;
+    }
+
+    .filters-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .search-box input,
+    .filter-select {
+      width: 100%;
+      background: #FFFFFF;
+      border: 1px solid var(--border-fine);
+      border-radius: 3px;
+      padding: 0.55rem 0.8rem;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .search-box input:focus,
+    .filter-select:focus {
+      border-color: var(--gold-primary);
+    }
+
+    .review-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .review-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-fine);
+      border-radius: 4px;
+      padding: 1.25rem 1.4rem;
+      box-shadow: var(--shadow-subtle);
+      transition: border-color 0.15s ease;
+    }
+
+    .review-card:hover {
+      border-color: #B8A382;
+    }
+
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.6rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .reviewer-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .reviewer-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .stars-display {
+      color: var(--gold-primary);
+      letter-spacing: 0.1em;
+      font-size: 0.95rem;
+    }
+
+    .review-timestamp {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .review-content {
+      font-size: 0.9rem;
+      color: #38342D;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3.5rem 1rem;
+      background: var(--surface-card);
+      border: 1px dashed var(--border-fine);
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+
+    .loading-spinner {
+      text-align: center;
+      padding: 3rem;
+      color: var(--gold-primary);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <header>
+      <div>
+        <div class="brand-sub">Class 7A Exhibition</div>
+        <h1 class="brand-title">CVS Review Administration</h1>
+      </div>
+
+      <div class="header-actions">
+        <span class="status-badge">&#9679; Live Sync</span>
+        <button id="exportBtn" class="btn">Export CSV</button>
+      </div>
+    </header>
+
+    <main id="dashboardContent">
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Reviews</div>
+          <div class="stat-val" id="statTotal">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Average Score</div>
+          <div class="stat-val"><span id="statAvg">0.0</span><span class="stat-val-sub">/ 5.0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">5-Star Feedback</div>
+          <div class="stat-val" id="stat5Star">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Critical Reviews (&le; 2&star;)</div>
+          <div class="stat-val" id="statCritical">0</div>
+        </div>
+      </section>
+
+      <div class="dashboard-middle">
+        <div class="panel">
+          <div class="panel-header">Rating Distribution</div>
+          <div class="dist-row">
+            <span class="dist-label">5 Stars</span>
+            <div class="dist-track"><div id="bar5" class="dist-fill"></div></div>
+            <span class="dist-count" id="count5">0</span>
+          </div>
+          <div class="dist-row">
+            <span class="dist-label">4 Stars</span>
+            <div class="dist-track"><div id="bar4" class="dist-fill"></div></div>
+            <span class="dist-count" id="count4">0</span>
+          </div>
+          <div class="dist-row">
+            <span class="dist-label">3 Stars</span>
+            <div class="dist-track"><div id="bar3" class="dist-fill"></div></div>
+            <span class="dist-count" id="count3">0</span>
+          </div>
+          <div class="dist-row">
+            <span class="dist-label">2 Stars</span>
+            <div class="dist-track"><div id="bar2" class="dist-fill"></div></div>
+            <span class="dist-count" id="count2">0</span>
+          </div>
+          <div class="dist-row">
+            <span class="dist-label">1 Star</span>
+            <div class="dist-track"><div id="bar1" class="dist-fill"></div></div>
+            <span class="dist-count" id="count1">0</span>
+          </div>
+        </div>
+
+        <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="panel-header">Exhibition Summary</div>
+            <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
+              Live stream active via Firebase Realtime Database. As parents submit feedback through the QR code link, entries automatically appear in the list below.
+            </p>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--gold-primary); font-weight: 500;">
+            Project: cvs-review-f67ee
+          </div>
+        </div>
+      </div>
+
+      <div class="filters-bar">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search by reviewer name or text...">
+        </div>
+        <div style="width: 170px;">
+          <select id="ratingFilter" class="filter-select">
+            <option value="all">All Ratings</option>
+            <option value="5">5 Stars only</option>
+            <option value="4">4 Stars only</option>
+            <option value="3">3 Stars only</option>
+            <option value="2">2 Stars only</option>
+            <option value="1">1 Star only</option>
+          </select>
+        </div>
+        <div style="width: 170px;">
+          <select id="sortOrder" class="filter-select">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="highest">Highest rating</option>
+            <option value="lowest">Lowest rating</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="reviewsContainer" class="review-list">
+        <div class="loading-spinner">Connecting to Firebase Realtime Stream...</div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "REPLACE_WITH_YOUR_FIREBASE_WEB_API_KEY",
+      authDomain: "cvs-review-f67ee.firebaseapp.com",
+      databaseURL: "https://cvs-review-f67ee-default-rtdb.firebaseio.com",
+      projectId: "cvs-review-f67ee",
+      storageBucket: "cvs-review-f67ee.firebasestorage.app",
+      messagingSenderId: "REPLACE_IF_CONFIGURED",
+      appId: "REPLACE_WITH_YOUR_FIREBASE_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let currentReviews = [];
+
+    const searchInput = document.getElementById("searchInput");
+    const ratingFilter = document.getElementById("ratingFilter");
+    const sortOrder = document.getElementById("sortOrder");
+    const reviewsContainer = document.getElementById("reviewsContainer");
+    const exportBtn = document.getElementById("exportBtn");
+
+    // Listen to real-time database updates directly on page load
+    const reviewsRef = ref(db, "reviews");
+    onValue(reviewsRef, (snapshot) => {
+      const data = snapshot.val();
+      currentReviews = [];
+
+      if (data) {
+        Object.keys(data).forEach((key) => {
+          currentReviews.push({
+            id: key,
+            name: data[key].name || "Anonymous",
+            rating: Number(data[key].rating) || 0,
+            review: data[key].review || "",
+            createdAt: data[key].createdAt || Date.now()
+          });
+        });
+      }
+
+      updateStats(currentReviews);
+      renderFilteredReviews();
+    }, (error) => {
+      console.error("Database read error:", error);
+      reviewsContainer.innerHTML = `<div class="empty-state" style="color: var(--state-error);">Database Read Error: ${error.message}. Please check that your Realtime Database rules allow reading (".read": true).</div>`;
+    });
+
+    function updateStats(items) {
+      const total = items.length;
+      document.getElementById("statTotal").textContent = total;
+
+      if (total === 0) {
+        document.getElementById("statAvg").textContent = "0.0";
+        document.getElementById("stat5Star").textContent = "0";
+        document.getElementById("statCritical").textContent = "0";
+        for (let i = 1; i <= 5; i++) {
+          document.getElementById(`count${i}`).textContent = "0";
+          document.getElementById(`bar${i}`).style.width = "0%";
+        }
+        return;
+      }
+
+      const sum = items.reduce((acc, curr) => acc + curr.rating, 0);
+      const avg = (sum / total).toFixed(1);
+      document.getElementById("statAvg").textContent = avg;
+
+      const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      items.forEach(r => {
+        if (counts[r.rating] !== undefined) {
+          counts[r.rating]++;
+        }
+      });
+
+      document.getElementById("stat5Star").textContent = counts[5];
+      document.getElementById("statCritical").textContent = counts[1] + counts[2];
+
+      for (let i = 1; i <= 5; i++) {
+        const count = counts[i];
+        const pct = Math.round((count / total) * 100);
+        document.getElementById(`count${i}`).textContent = count;
+        document.getElementById(`bar${i}`).style.width = `${pct}%`;
+      }
+    }
+
+    function renderFilteredReviews() {
+      const query = searchInput.value.toLowerCase().trim();
+      const ratingVal = ratingFilter.value;
+      const sort = sortOrder.value;
+
+      let filtered = currentReviews.filter((item) => {
+        const matchesQuery = item.name.toLowerCase().includes(query) || item.review.toLowerCase().includes(query);
+        const matchesRating = ratingVal === "all" || item.rating.toString() === ratingVal;
+        return matchesQuery && matchesRating;
+      });
+
+      filtered.sort((a, b) => {
+        if (sort === "newest") return b.createdAt - a.createdAt;
+        if (sort === "oldest") return a.createdAt - b.createdAt;
+        if (sort === "highest") return b.rating - a.rating;
+        if (sort === "lowest") return a.rating - b.rating;
+        return 0;
+      });
+
+      if (filtered.length === 0) {
+        reviewsContainer.innerHTML = `
+          <div class="empty-state">
+            ${currentReviews.length === 0 ? "No visitor feedback has been submitted to the database yet." : "No reviews match your search filter criteria."}
+          </div>
+        `;
+        return;
+      }
+
+      reviewsContainer.innerHTML = filtered.map((item) => {
+        const stars = "&#9733;".repeat(item.rating) + "&#9734;".repeat(5 - item.rating);
+        const dateStr = new Date(item.createdAt).toLocaleString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        const safeName = escapeHtml(item.name);
+        const safeReview = escapeHtml(item.review);
+
+        return `
+          <article class="review-card">
+            <div class="review-header">
+              <div class="reviewer-meta">
+                <span class="reviewer-name">${safeName}</span>
+                <span class="stars-display" title="${item.rating} out of 5">${stars}</span>
+              </div>
+              <time class="review-timestamp">${dateStr}</time>
+            </div>
+            <div class="review-content">${safeReview}</div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    searchInput.addEventListener("input", renderFilteredReviews);
+    ratingFilter.addEventListener("change", renderFilteredReviews);
+    sortOrder.addEventListener("change", renderFilteredReviews);
+
+    exportBtn.addEventListener("click", () => {
+      if (currentReviews.length === 0) {
+        alert("No reviews available to export.");
+        return;
+      }
+
+      const headers = ["Review ID", "Reviewer Name", "Rating", "Review Text", "Date Submitted"];
+      const rows = currentReviews.map((r) => [
+        `"${r.id}"`,
+        `"${r.name.replace(/"/g, '""')}"`,
+        r.rating,
+        `"${r.review.replace(/"/g, '""').replace(/\n/g, ' ')}"`,
+        `"${new Date(r.createdAt).toISOString()}"`
+      ]);
+
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Class7A_CVS_Reviews_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, (m) => map[m]);
+    }
+  </script>
+</body>
+</html>
